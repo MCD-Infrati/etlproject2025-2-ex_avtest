@@ -1,0 +1,9 @@
+{
+	"name": "CollabETL",
+	"location": "brazilsouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "16a45110-ce5f-4e16-a0b1-4104ef03049b",
+		"tenantId": "e994072b-523e-4bfe-86e2-442c5e10b244"
+	}
+}
