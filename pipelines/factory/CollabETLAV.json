@@ -1,0 +1,9 @@
+{
+	"name": "CollabETLAV",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "7a5fac60-4fa8-4caa-8158-cad6902fd6fe",
+		"tenantId": "771a76a5-30e1-4c4f-bd2a-45a9ea80c9ca"
+	}
+}
