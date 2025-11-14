@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "municipios",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "BlobConn",
@@ -10,9 +10,11 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"container": "output"
+				"fileName": "municipios.csv",
+				"container": "clientesxciudades"
 			},
 			"columnDelimiter": ",",
+			"rowDelimiter": "\n",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": "\""

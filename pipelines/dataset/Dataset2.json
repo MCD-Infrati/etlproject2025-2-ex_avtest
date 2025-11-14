@@ -1,0 +1,73 @@
+{
+	"name": "Dataset2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "BlobConn",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "error.csv",
+				"container": "clientesxciudades"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "REGION",
+				"type": "String"
+			},
+			{
+				"name": "COD_DEPARTAMENTO",
+				"type": "String"
+			},
+			{
+				"name": "DEPARTAMENTO",
+				"type": "String"
+			},
+			{
+				"name": "COD_MUNICIPIO",
+				"type": "String"
+			},
+			{
+				"name": "MUNICIPIO",
+				"type": "String"
+			},
+			{
+				"name": "cod_mun_s",
+				"type": "String"
+			},
+			{
+				"name": "nro_cliente",
+				"type": "String"
+			},
+			{
+				"name": "nombre",
+				"type": "String"
+			},
+			{
+				"name": "apellido",
+				"type": "String"
+			},
+			{
+				"name": "cod_ciudad",
+				"type": "String"
+			},
+			{
+				"name": "edad",
+				"type": "String"
+			},
+			{
+				"name": "fecha_ultima_compra",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

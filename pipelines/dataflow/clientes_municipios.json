@@ -1,0 +1,255 @@
+{
+	"name": "clientes_municipios",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TablaClientes",
+						"type": "DatasetReference"
+					},
+					"name": "ClientesSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "municipios",
+						"type": "DatasetReference"
+					},
+					"name": "MunicipiosSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "error2",
+					"rejectedDataLinkedService": {
+						"referenceName": "BlobConn",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"dataset": {
+						"referenceName": "SalidaETL",
+						"type": "DatasetReference"
+					},
+					"name": "output",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"dataset": {
+						"referenceName": "joinOutput",
+						"type": "DatasetReference"
+					},
+					"name": "joinOutput"
+				},
+				{
+					"dataset": {
+						"referenceName": "outputSort",
+						"type": "DatasetReference"
+					},
+					"name": "outputSort"
+				},
+				{
+					"dataset": {
+						"referenceName": "derivedMun",
+						"type": "DatasetReference"
+					},
+					"name": "derivedMun"
+				},
+				{
+					"dataset": {
+						"referenceName": "selectMun",
+						"type": "DatasetReference"
+					},
+					"name": "selectMun"
+				},
+				{
+					"dataset": {
+						"referenceName": "DataSinkNuevo",
+						"type": "DatasetReference"
+					},
+					"name": "nuevosink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "sort2"
+				},
+				{
+					"name": "joinClientesMunicipios"
+				},
+				{
+					"name": "EdadMAY100"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "fixTabla"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          nro_cliente as integer,",
+				"          nombre as string,",
+				"          apellido as string,",
+				"          ciudad as double,",
+				"          edad as integer,",
+				"          fecha_ultima_compra as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> ClientesSource",
+				"source(output(",
+				"          REGION as string,",
+				"          {CÓDIGO DANE DEL DEPARTAMENTO} as short,",
+				"          DEPARTAMENTO as string,",
+				"          {CÓDIGO DANE DEL MUNICIPIO} as string,",
+				"          MUNICIPIO as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> MunicipiosSource",
+				"ClientesSource select(mapColumn(",
+				"          nro_cliente,",
+				"          nombre,",
+				"          apellido,",
+				"          cod_ciudad = ciudad,",
+				"          edad,",
+				"          fecha_ultima_compra",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(cod_municipio = toString(cod_ciudad)) ~> derivedColumn1",
+				"MunicipiosSource select(mapColumn(",
+				"          REGION,",
+				"          COD_DEPARTAMENTO = {CÓDIGO DANE DEL DEPARTAMENTO},",
+				"          DEPARTAMENTO,",
+				"          COD_MUNICIPIO = {CÓDIGO DANE DEL MUNICIPIO},",
+				"          MUNICIPIO",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 derive(cod_mun_s = concat(",
+				"",
+				"split(COD_MUNICIPIO, '.')[1], '.',",
+				"",
+				"rpad(split(COD_MUNICIPIO, '.')[2], 3, '0')",
+				"",
+				")) ~> derivedColumn2",
+				"derivedColumn1 sort(desc(cod_municipio, true)) ~> sort1",
+				"derivedColumn2 sort(desc(cod_mun_s, true),",
+				"     partitionBy('hash', 1)) ~> sort2",
+				"sort2, sort1 join(cod_mun_s == derivedColumn1@cod_municipio,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinClientesMunicipios",
+				"joinClientesMunicipios split(edad >100,",
+				"     disjoint: false) ~> EdadMAY100@(mas100, correctos)",
+				"EdadMAY100@mas100 select(mapColumn(",
+				"          REGION,",
+				"          COD_DEPARTAMENTO,",
+				"          DEPARTAMENTO,",
+				"          COD_MUNICIPIO = EdadMAY100@mas100@COD_MUNICIPIO,",
+				"          MUNICIPIO,",
+				"          cod_mun_s,",
+				"          nro_cliente,",
+				"          nombre,",
+				"          apellido,",
+				"          cod_ciudad,",
+				"          edad,",
+				"          fecha_ultima_compra,",
+				"          cod_municipio = EdadMAY100@mas100@cod_municipio",
+				"     ),",
+				"     partitionBy('hash', 1),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"EdadMAY100@correctos select(mapColumn(",
+				"          nro_cliente,",
+				"          nombre,",
+				"          apellido,",
+				"          edad,",
+				"          fecha_ultima_compra,",
+				"          REGION,",
+				"          COD_DEPARTAMENTO,",
+				"          DEPARTAMENTO,",
+				"          MUNICIPIO,",
+				"          cod_mun_s",
+				"     ),",
+				"     partitionBy('hash', 1),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> fixTabla",
+				"select3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['error.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     partitionBy('hash', 1)) ~> error2",
+				"fixTabla sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['clientsOut.csv'],",
+				"     umask: 0222,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 0,",
+				"     outputAssertFailedRows: true,",
+				"     partitionBy('hash', 1)) ~> output",
+				"joinClientesMunicipios sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['joinOutput.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> joinOutput",
+				"sort2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['outputSort.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> outputSort",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['derivedMun.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> derivedMun",
+				"select2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['selectMun.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> selectMun",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> nuevosink"
+			]
+		}
+	}
+}

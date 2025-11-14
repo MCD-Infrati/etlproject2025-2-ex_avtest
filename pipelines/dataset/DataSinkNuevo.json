@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "DataSinkNuevo",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "BlobConn",
@@ -10,7 +10,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"container": "output"
+				"folderPath": "output_data",
+				"container": "testcontainer"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",

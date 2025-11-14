@@ -1,0 +1,9 @@
+{
+	"name": "ETLPracticeF1",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "933aa959-dd83-4d16-b922-ebc7c7e3c29f",
+		"tenantId": "e994072b-523e-4bfe-86e2-442c5e10b244"
+	}
+}

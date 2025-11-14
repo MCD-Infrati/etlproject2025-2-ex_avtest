@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "outputSort",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "BlobConn",
@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"fileName": "outputSort.csv",
 				"container": "output"
 			},
 			"columnDelimiter": ",",
